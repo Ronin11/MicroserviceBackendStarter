@@ -1,0 +1,18 @@
+version: '3.7'
+
+services:
+  server:
+    build:
+      context: .
+      dockerfile: Dockerfile
+      # target: dev
+    # environment:
+    #   DATABASE_URL: db://${POSTGRES_USER}@db/api?sslmode=disable
+    # depends_on:
+    #   - db
+    # links:
+    #   - db
+    ports:
+      - ${BACKEND_PORT}:8080    # The HTTP port
+    # volumes:
+    #   - .:/opt/app/api
