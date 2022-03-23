@@ -6,13 +6,47 @@ services:
       context: .
       dockerfile: Dockerfile
       # target: dev
-    # environment:
-    #   DATABASE_URL: db://${POSTGRES_USER}@db/api?sslmode=disable
-    # depends_on:
-    #   - db
-    # links:
-    #   - db
+    environment:
+      DATABASE_URL: db://${POSTGRES_USER}@db/api?sslmode=disable
+    depends_on:
+      - db
+    links:
+      - db
     ports:
-      - ${BACKEND_PORT}:8080    # The HTTP port
+      - ${BACKEND_PORT}:8080 
     # volumes:
     #   - .:/opt/app/api
+
+    
+  db:
+    image: postgres:14-alpine
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    environment:
+      POSTGRES_DB: ${POSTGRES_DB}
+      POSTGRES_USER: ${POSTGRES_USER}
+      POSTGRES_PASSWORD: ${POSTGRES_PASS}
+      POSTGRES_HOST_AUTH_METHOD: trust
+    ports:
+      - ${POSTGRES_PORT}:5432
+
+      
+  migrate: &basemigrate
+    profiles: ["tools"]
+    image: migrate/migrate
+    entrypoint: "migrate -database postgresql://${POSTGRES_USER}@db/api?sslmode=disable -path /tmp/migrations"
+    command: up
+    links:
+      - db
+    volumes:
+      - ./migrations:/tmp/migrations
+
+  create-migration:
+    <<: *basemigrate
+    entrypoint: migrate create -dir /tmp/migrations -ext sql
+    command: ""
+
+
+volumes:
+  postgres_data:
+      driver: local
