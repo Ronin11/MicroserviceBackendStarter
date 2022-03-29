@@ -4,12 +4,17 @@ import (
 	// "encoding/json"
 )
 
-type Response struct {
-	Persons []Person `json:"persons"`
+type HealthMeasurements struct {
+	Data []HealthMeasurement `json:"measurements"`
 }
 
-type Person struct {
-	Id        int    `json:"id"`
-	FirstName string `json:"first_name"`
-	LastName  string `json:"last_name"`
+type HealthMeasurement struct {
+	Id        			int    `json:"id"`
+	CreatedTime 		string `json:"created_time"`
+	UpdatedWeight  		string `json:"updated_weight"`
+	UpdatedBPSystolic  	string `json:"updated_bp_systolic"`
+	UpdatedBPDiastolic  string `json:"updated_bp_diastolic"`
+	UpdatedO2 			string `json:"updated_o2"`
+	UpdatedBPM  		string `json:"updated_bpm"`
+	Comment  			string `json:"comment"`
 }

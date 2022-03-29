@@ -7,7 +7,14 @@ services:
       dockerfile: Dockerfile
       # target: dev
     environment:
-      DATABASE_URL: db://${POSTGRES_USER}@db/api?sslmode=disable
+      # DATABASE_URL: db://${POSTGRES_USER}@db/api?sslmode=disable
+      DB_URL: db
+      DB_PORT: ${POSTGRES_PORT}
+      DB_USER: ${POSTGRES_USER}
+      DB_PASSWORD: ${POSTGRES_PASS}
+      DB_NAME: ${POSTGRES_DB_NAME}
+
+
     depends_on:
       - db
     links:
@@ -23,28 +30,38 @@ services:
     volumes:
       - postgres_data:/var/lib/postgresql/data
     environment:
-      POSTGRES_DB: ${POSTGRES_DB}
+      POSTGRES_DB: ${POSTGRES_DB_NAME}
       POSTGRES_USER: ${POSTGRES_USER}
       POSTGRES_PASSWORD: ${POSTGRES_PASS}
       POSTGRES_HOST_AUTH_METHOD: trust
     ports:
       - ${POSTGRES_PORT}:5432
 
-      
-  migrate: &basemigrate
-    profiles: ["tools"]
-    image: migrate/migrate
-    entrypoint: "migrate -database postgresql://${POSTGRES_USER}@db/api?sslmode=disable -path /tmp/migrations"
-    command: up
-    links:
-      - db
+  flyway:
+    image: flyway/flyway
+    # postgres url schema: jdbc:postgresql://host:port/database
+    command: -url=jdbc:postgresql://db:${POSTGRES_PORT}/${POSTGRES_DB_NAME} -user=${POSTGRES_USER} -password=${POSTGRES_PASS} -connectRetries=10 migrate info
     volumes:
-      - ./migrations:/tmp/migrations
+        - ./migrations:/flyway/sql
+    links:
+        - db
+    depends_on:
+        - db
+      
+  # migrate: &basemigrate
+  #   profiles: ["tools"]
+  #   image: migrate/migrate
+  #   entrypoint: "migrate -database postgresql://${POSTGRES_USER}@db/api?sslmode=disable -path /tmp/migrations"
+  #   command: up
+  #   links:
+  #     - db
+  #   volumes:
+  #     - ./migrations:/tmp/migrations
 
-  create-migration:
-    <<: *basemigrate
-    entrypoint: migrate create -dir /tmp/migrations -ext sql
-    command: ""
+  # create-migration:
+  #   <<: *basemigrate
+  #   entrypoint: migrate create -dir /tmp/migrations -ext sql
+  #   command: ""
 
 
 volumes:
