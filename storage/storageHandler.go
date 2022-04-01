@@ -51,7 +51,7 @@ func initialize(dsn string) (*StorageHandler) {
 
 func (sh *StorageHandler) reconnect() (error){
 	sess, err := postgresql.Open(sh.connectionUrl)
-	storageHandler.sess = sess
+	sh.sess = sess
 	if err != nil {
 		log.Println("Database connection error: ", err)
 		return err
@@ -62,14 +62,16 @@ func (sh *StorageHandler) reconnect() (error){
 // TODO pass a string for DB Name? Have multiple handlers for each item maybe? or just set it in the struct
 func GetInstance(collection string) (*StorageHandler) {
 	if storageManager == nil {
-		m := make(map[string]*StorageHandler)
+		storageManager = &StorageManager{}
+		storageManager.handlers = make(map[string]*StorageHandler)
 	}
 	
-	if storageHandler != nil {
-		return storageHandler
+	if storageManager.handlers[collection] == nil {
+		storageManager.handlers[collection] = initialize(os.Getenv("POSTGRES_URL"))
+		storageManager.handlers[collection].collection = collection
 	}
 
-	return initialize(os.Getenv("POSTGRES_URL"))
+	return storageManager.handlers[collection]
 }
 
 // func (sh *StorageHandler) Cleanup() (error){
@@ -77,37 +79,10 @@ func GetInstance(collection string) (*StorageHandler) {
 // 	return nil
 // }
 
-func (sh *StorageHandler) Fetch(collection string) (error){
-	// fmt.Println("FETCH1 : ", reflect.TypeOf(valueType))
-	res := sh.sess.Collection(collection).Find()
-	fmt.Println("ROWS: ", res)
-	// if err != nil {
-	// 	fmt.Println("Fetch Err: ", err)
-	// 	return err
-	// }
-	// defer rows.Close()
-	
-	// // var rowSlice []Row
-	// for rows.Next() {
-	// 	// var r Row
-	// 	// newItem := interface{}
-	// 	// err := rows.Scan(&newItem.id, &newItem.created_time, &newItem.data)
-	// 	// if err != nil {
-	// 	// 	log.Fatal(err)
-	// 	// }
-	// 	// itemArray = append(itemArray, r)
-	// }
-
-	return nil
-	// err := sh.boltDb.View(func(tx *bolt.Tx) error {
-	// 	b := tx.Bucket([]byte("DB")).Bucket([]byte("WEIGHT"))
-	// 	b.ForEach(func(k, v []byte) error {
-	// 		fmt.Println(string(k), string(v))
-	// 		return nil
-	// 	})
-	// 	return nil
-	// })
-	// return err
+func (sh *StorageHandler) Fetch(items interface{}) (error){
+	res := sh.sess.Collection(sh.collection).Find()
+	err := res.All(&items)
+	return err
 }
 
 // func (sh *StorageHandler) Get(id string) (error){
@@ -123,7 +98,7 @@ func (sh *StorageHandler) Fetch(collection string) (error){
 
 
 
-func (sh *StorageHandler) Store(collection string, value interface{}) (error) {
+func (sh *StorageHandler) Store(value interface{}) (error) {
 	fmt.Println("STORE")
 	if value == nil {
 		fmt.Println("Store value nil")
@@ -135,7 +110,7 @@ func (sh *StorageHandler) Store(collection string, value interface{}) (error) {
 			return err
 		}
 	}
-	id, err := sh.sess.Collection(collection).Insert(value)
+	id, err := sh.sess.Collection(sh.collection).Insert(value)
 	if id != nil {
 		fmt.Println("STORED")
 	}

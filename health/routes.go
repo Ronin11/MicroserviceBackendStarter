@@ -37,7 +37,7 @@ func health(w http.ResponseWriter, r *http.Request) {
 
 func add(w http.ResponseWriter, r *http.Request) {
 	fmt.Println("add endpoint")
-	err := AddMeasurement()
+	err := Add()
 	if err != nil {
 		log.Println("ERR: ", err)
 	}
