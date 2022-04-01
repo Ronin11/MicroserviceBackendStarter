@@ -23,5 +23,5 @@ func AddMeasurement() error {
 		UpdatedBPM: 105,
 	}
 	fmt.Println("REF: ", reflect.TypeOf(healthMeasurement))
-	return storageHandler.Store(healthMeasurement)
+	return storageHandler.Store("items", healthMeasurement)
 }

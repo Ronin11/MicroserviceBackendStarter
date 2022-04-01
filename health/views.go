@@ -6,8 +6,6 @@ import (
 )
 
 func GetMeasurements() ([]HealthMeasurement, error) {
-	storageHandler := storage.GetInstance()
-	fmt.Println("SH2: ", storageHandler)
 
 	measurements := GetAllMeasurements()
 	
