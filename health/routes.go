@@ -1,6 +1,7 @@
 package health
 
 import (
+	"fmt"
 	"encoding/json"
 	"log"
 	"net/http"
@@ -18,6 +19,7 @@ func CreateHealthRoutes(router *mux.Router) http.Handler {
 }
 
 func health(w http.ResponseWriter, r *http.Request) {
+	fmt.Println("health endpoint")
 	measurements, err := GetMeasurements()
 	if err != nil {
 		log.Println("ERR: ", err)
@@ -34,6 +36,7 @@ func health(w http.ResponseWriter, r *http.Request) {
 }
 
 func add(w http.ResponseWriter, r *http.Request) {
+	fmt.Println("add endpoint")
 	err := AddMeasurement()
 	if err != nil {
 		log.Println("ERR: ", err)

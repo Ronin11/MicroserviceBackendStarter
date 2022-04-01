@@ -6,7 +6,7 @@ import (
 
 	"github.com/gorilla/mux"
 
-	"nateashby.com/golang/health"
+	"nateashby.com/gofun/health"
 )
 
 func main() {

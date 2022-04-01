@@ -19,7 +19,7 @@ dev:
 	compose-watcher
 
 run: build
-	docker-compose up --force-recreate -d
+	docker-compose up --force-recreate
 
 build:
 	docker-compose build

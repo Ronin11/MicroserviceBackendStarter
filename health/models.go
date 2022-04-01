@@ -2,6 +2,7 @@ package health
 
 import (
 	// "encoding/json"
+	"time"
 )
 
 type HealthMeasurements struct {
@@ -9,12 +10,18 @@ type HealthMeasurements struct {
 }
 
 type HealthMeasurement struct {
-	Id        			int    `json:"id"`
-	CreatedTime 		string `json:"created_time"`
-	UpdatedWeight  		string `json:"updated_weight"`
-	UpdatedBPSystolic  	string `json:"updated_bp_systolic"`
-	UpdatedBPDiastolic  string `json:"updated_bp_diastolic"`
-	UpdatedO2 			string `json:"updated_o2"`
-	UpdatedBPM  		string `json:"updated_bpm"`
-	Comment  			string `json:"comment"`
+	Id        					int    `json:"id"`
+	CreatedTime 				time.Time `json:"created_time"`
+	UpdatedWeight  			int `json:"updated_weight,omitempty"`
+	UpdatedBPSystolic  	int `json:"updated_bp_systolic,omitempty"`
+	UpdatedBPDiastolic  int `json:"updated_bp_diastolic,omitempty"`
+	UpdatedO2 					int `json:"updated_o2,omitempty"`
+	UpdatedBPM  				int `json:"updated_bpm,omitempty"`
+	Comment  						string `json:"comment,omitempty"`
+}
+
+func GetAllMeasurements() []HealthMeasurement{
+	var measurements = []HealthMeasurement{}
+	
+	return measurements
 }
