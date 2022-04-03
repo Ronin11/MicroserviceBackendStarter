@@ -8,6 +8,7 @@ services:
       # target: dev
     environment:
       POSTGRES_URL: postgres://${POSTGRES_USER}:${POSTGRES_PASS}@db:${POSTGRES_PORT}/${POSTGRES_DB_NAME}
+      POSTGRES_HEALTH_TABLE_NAME: ${POSTGRES_HEALTH_TABLE_NAME}
     depends_on:
       - db
     links:

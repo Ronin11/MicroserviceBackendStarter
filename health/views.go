@@ -2,17 +2,11 @@ package health
 
 import (
 	// "log"
-	"fmt"
+	// "fmt"
 )
 
-func GetMeasurements() ([]HealthMeasurement, error) {
-	storageHandler := storage.GetInstance()
-	fmt.Println("SH2: ", storageHandler)
+func getMeasurements() (*HealthMeasurements, error) {
+	storageHandler := GetStorageHandlerInstance()
 
-	measurements := GetAllMeasurements()
-	
-
-	fmt.Println("WUT2: ", measurements)
-
-	return measurements, nil
+	return storageHandler.GetAllMeasurements()
 }
