@@ -10,3 +10,9 @@ func GetMeasurements() (*HealthMeasurements, error) {
 
 	return storageHandler.GetAllMeasurements()
 }
+
+func GetMeasurement(id string) (*HealthMeasurement, error) {
+	storageHandler := GetStorageHandlerInstance()
+
+	return storageHandler.GetMeasurement(id)
+}

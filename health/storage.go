@@ -55,7 +55,7 @@ func (sh *StorageHandler) Cleanup() (error){
 }
 
 func (sh *StorageHandler) GetAllMeasurements() (*HealthMeasurements, error){
-	rows, err := sh.db.Query(context.Background(), fmt.Sprintf("SELECT * from %s", sh.tableName))
+	rows, err := sh.db.Query(context.Background(), fmt.Sprintf("SELECT * FROM %s", sh.tableName))
 	if err != nil {
 		logging.Log("Fetch Err: ", err)
 		return nil, err
@@ -75,18 +75,33 @@ func (sh *StorageHandler) GetAllMeasurements() (*HealthMeasurements, error){
 	return measurements, nil
 }
 
-func (sh *StorageHandler) CreateMeasurement(data HealthData) (HealthMeasurement, error){
+func (sh *StorageHandler) CreateMeasurement(data HealthData) (*HealthMeasurement, error){
 	var hm HealthMeasurement 
 	err := sh.db.QueryRow(context.Background(), fmt.Sprintf("INSERT INTO %s (data) VALUES($1) RETURNING *", sh.tableName), data).Scan(&hm.Id, &hm.CreatedTime, &hm.Data)
 	if err != nil {
 		logging.Log("CREATE FAILED: ", err)
 	}
 
-	return hm, err
+	return &hm, err
 }
 
-func (sh *StorageHandler) Get(id string) (error){
-	logging.Log("GET")
-	return nil
+func (sh *StorageHandler) GetMeasurement(id string) (*HealthMeasurement, error){
+	var hm HealthMeasurement 
+	err := sh.db.QueryRow(context.Background(), fmt.Sprintf("SELECT * FROM %s WHERE ID=$1", sh.tableName), id).Scan(&hm.Id, &hm.CreatedTime, &hm.Data)
+	if err != nil {
+		logging.Log("GET FAILED: ", err)
+	}
+
+	return &hm, err
+}
+
+func (sh *StorageHandler) DeleteMeasurement(id string) (error){
+
+	_, err := sh.db.Exec(context.Background(), fmt.Sprintf("DELETE FROM %s WHERE ID=$1", sh.tableName), id)
+	if err != nil {
+		logging.Log("DELETE FAILED: ", err)
+	}
+
+	return err
 }
 

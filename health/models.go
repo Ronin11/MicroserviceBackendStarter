@@ -8,10 +8,6 @@ import (
     "database/sql/driver"
 )
 
-type HealthMeasurements struct {
-	Data []HealthMeasurement `json:"measurements"`
-}
-
 type HealthData struct {
 	UpdatedWeight  		int 		`json:"updated_weight,omitempty"`
 	UpdatedBPSystolic  	int 		`json:"updated_bp_systolic,omitempty"`
@@ -27,8 +23,13 @@ type HealthMeasurement struct {
 	Data		HealthData 	`json:"data"`
 }
 
-func (hm HealthMeasurement) Value() (driver.Value, error) {
+func (hm *HealthMeasurement) Value() (driver.Value, error) {
     return json.Marshal(hm)
+}
+
+func (hm HealthMeasurement) Serialize() ([]byte) {
+    str, _ := json.Marshal(hm)
+	return str
 }
 
 func (hm *HealthMeasurement) Scan(value interface{}) error {
@@ -39,3 +40,19 @@ func (hm *HealthMeasurement) Scan(value interface{}) error {
 
     return json.Unmarshal(b, &hm)
 }
+
+type HealthMeasurements struct {
+	Data []HealthMeasurement `json:"measurements"`
+}
+
+
+func (hms *HealthMeasurements) Value() (driver.Value, error) {
+    return json.Marshal(hms)
+}
+
+func (hms *HealthMeasurements) Serialize() ([]byte) {
+    str, _ := json.Marshal(hms)
+	return str
+}
+
+
