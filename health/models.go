@@ -1,12 +1,10 @@
 package health
 
 import (
-	"fmt"
 	"encoding/json"
 	"time"
 	"errors"
 
-	// "database/sql"
     "database/sql/driver"
 )
 
@@ -29,30 +27,11 @@ type HealthMeasurement struct {
 	Data		HealthData 	`json:"data"`
 }
 
-// type CreateMeasurementResponse struct {
-// 	Id	string `json:"id"`
-// }
-
-// func (hd HealthData) Value() (driver.Value, error) {
-//     return json.Marshal(hd)
-// }
-
-// func (hd *HealthData) Scan(value interface{}) error {
-//     b, ok := value.([]byte)
-//     if !ok {
-//         return errors.New("type assertion to []byte failed")
-//     }
-
-//     return json.Unmarshal(b, &hd)
-// }
-
 func (hm HealthMeasurement) Value() (driver.Value, error) {
-	fmt.Println("VALUE: ", hm)
     return json.Marshal(hm)
 }
 
 func (hm *HealthMeasurement) Scan(value interface{}) error {
-	fmt.Println("SCAN: ", value)
     b, ok := value.([]byte)
     if !ok {
         return errors.New("type assertion to []byte failed")

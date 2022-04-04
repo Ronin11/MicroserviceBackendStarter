@@ -1,14 +1,13 @@
 package health
 
 import (
-	// "reflect"
 	"context"
 	"fmt"
-	"log"
 	"os"
-	// "encoding/json"
 
 	"github.com/jackc/pgx/v4"
+
+	"nateashby.com/gofun/logging"
 )
 
 type StorageHandler struct {
@@ -25,9 +24,9 @@ func initialize(fullUrl string, tableName string) (*StorageHandler) {
 	storageHandler.db = conn
 	storageHandler.tableName = tableName
 	if err != nil {
-		log.Println("Database connection error: ", err)
+		logging.Log("Database connection error: ", err)
 	}else{
-		log.Println("Database connection established")
+		logging.Log("Database connection established")
 	}
 	return storageHandler
 }
@@ -36,13 +35,12 @@ func (sh *StorageHandler) reconnect() (error){
 	conn, err := pgx.Connect(context.Background(), sh.dbUrl)
 	storageHandler.db = conn
 	if err != nil {
-		log.Println("Database reconnection error: ", err)
+		logging.Log("Database reconnection error: ", err)
 		return err
 	}
 	return nil
 } 
 
-// TODO pass a string for DB Name? Have multiple handlers for each item maybe? or just set it in the struct
 func GetStorageHandlerInstance() (*StorageHandler) {
 	if storageHandler != nil {
 		return storageHandler
@@ -59,7 +57,7 @@ func (sh *StorageHandler) Cleanup() (error){
 func (sh *StorageHandler) GetAllMeasurements() (*HealthMeasurements, error){
 	rows, err := sh.db.Query(context.Background(), fmt.Sprintf("SELECT * from %s", sh.tableName))
 	if err != nil {
-		fmt.Println("Fetch Err: ", err)
+		logging.Log("Fetch Err: ", err)
 		return nil, err
 	}
 	defer rows.Close()
@@ -69,8 +67,7 @@ func (sh *StorageHandler) GetAllMeasurements() (*HealthMeasurements, error){
 		var hm HealthMeasurement
 		err := rows.Scan(&hm.Id, &hm.CreatedTime, &hm.Data)
 		if err != nil {
-			fmt.Println("SCAN ERR: ", err)
-			// log.Fatal(err)
+			logging.Log("SCAN ERR: ", err)
 		}
 		measurements.Data = append(measurements.Data, hm)
 	}
@@ -82,38 +79,14 @@ func (sh *StorageHandler) CreateMeasurement(data HealthData) (HealthMeasurement,
 	var hm HealthMeasurement 
 	err := sh.db.QueryRow(context.Background(), fmt.Sprintf("INSERT INTO %s (data) VALUES($1) RETURNING *", sh.tableName), data).Scan(&hm.Id, &hm.CreatedTime, &hm.Data)
 	if err != nil {
-		fmt.Println("CREATE FAILED: ", err)
+		logging.Log("CREATE FAILED: ", err)
 	}
 
 	return hm, err
 }
 
 func (sh *StorageHandler) Get(id string) (error){
-	fmt.Println("GET")
+	logging.Log("GET")
 	return nil
 }
 
-
-
-// func (sh *StorageHandler) Store(value interface{}) (error) {
-// 	fmt.Println("STORE")
-// 	if value == nil {
-// 		fmt.Println("Store value nil")
-// 		return nil
-// 	}
-// 	if sh.db == nil {
-// 		err := sh.reconnect()
-// 		if err != nil {
-// 			return err
-// 		}
-// 	}
-
-// 	data, err := json.Marshal(value)
-// 	if err != nil {
-// 		fmt.Println("Store Marshal Err: ", err)
-// 		return err
-// 	}
-	
-// 	fmt.Println("STORED")
-// 	return nil
-// }
