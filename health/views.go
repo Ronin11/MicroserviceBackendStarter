@@ -5,7 +5,7 @@ import (
 	// "fmt"
 )
 
-func getMeasurements() (*HealthMeasurements, error) {
+func GetMeasurements() (*HealthMeasurements, error) {
 	storageHandler := GetStorageHandlerInstance()
 
 	return storageHandler.GetAllMeasurements()

@@ -1,4 +1,4 @@
-package health
+package api
 
 import (
 	"encoding/json"
@@ -7,19 +7,20 @@ import (
 	"github.com/gorilla/mux"
 
 	"nateashby.com/gofun/logging"
+	"nateashby.com/gofun/health"
 )
 
 func CreateHealthRoutes(router *mux.Router) http.Handler {
 	logging.Log("Creating health routes")
 	
-	router.HandleFunc("/health", health).Methods("GET")
-	router.HandleFunc("/add", add).Methods("POST")
+	router.HandleFunc("/", viewMeasurements).Methods("GET")
+	router.HandleFunc("/addMeasurements", addMeasurements).Methods("POST")
 	
 	return router
 }
 
-func health(w http.ResponseWriter, r *http.Request) {
-	measurements, err := getMeasurements()
+func viewMeasurements(w http.ResponseWriter, r *http.Request) {
+	measurements, err := health.GetMeasurements()
 	if err != nil {
 		logging.Log("ERR: ", err)
 	}
@@ -35,17 +36,17 @@ func health(w http.ResponseWriter, r *http.Request) {
 	w.Write(jsonResponse)
 }
 
-func add(w http.ResponseWriter, r *http.Request) {
-	var entry HealthData
+func addMeasurements(w http.ResponseWriter, r *http.Request) {
+	var entry health.HealthData
 	err := json.NewDecoder(r.Body).Decode(&entry)
-	if (HealthData{}) == entry {
+	if (health.HealthData{}) == entry {
 		w.WriteHeader(http.StatusNoContent)
 		return
 	}
 	if err != nil {
 		logging.Log("ADD ERR: ", err)
 	}
-	measurement, err := AddMeasurement(entry)
+	measurement, err := health.AddMeasurement(entry)
 	
 	if err != nil {
 		logging.Log("ERR: ", err)
