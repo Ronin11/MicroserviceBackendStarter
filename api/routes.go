@@ -47,11 +47,15 @@ func addMeasurements(w http.ResponseWriter, r *http.Request) {
 	}
 	if err != nil {
 		logging.Log("ADD ERR: ", err)
+		w.WriteHeader(http.StatusBadRequest)
+		return
 	}
 	measurement, err := health.AddMeasurement(entry)
 	
 	if err != nil {
 		logging.Log("ERR: ", err)
+		w.WriteHeader(http.StatusInternalServerError)
+		return
 	}
 
 	w.Header().Set("Content-Type", "application/json")
@@ -68,7 +72,10 @@ func getMeasurement(w http.ResponseWriter, r *http.Request) {
 	}
 	if err != nil {
 		logging.Log("GET ERR: ", err)
+		w.WriteHeader(http.StatusBadRequest)
+		return
 	}
+	
 	measurement, err := health.GetMeasurement(idObj.Id)
 
 	w.Header().Set("Content-Type", "application/json")
@@ -89,13 +96,16 @@ func deleteMeasurement(w http.ResponseWriter, r *http.Request) {
 	}
 	if err != nil {
 		logging.Log("DELETE ERR: ", err)
+		w.WriteHeader(http.StatusBadRequest)
+		return
 	}
 	err = health.DeleteMeasurement(idObj.Id)
 
 	if err != nil {
 		logging.Log("GET ERR: ", err)
 		w.WriteHeader(http.StatusInternalServerError)
-	}else{
-		w.WriteHeader(http.StatusOK)
+		return
 	}
+	
+	w.WriteHeader(http.StatusOK)
 }

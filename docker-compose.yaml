@@ -7,18 +7,28 @@ services:
       dockerfile: Dockerfile
       # target: dev
     environment:
-      POSTGRES_URL: postgres://${POSTGRES_USER}:${POSTGRES_PASS}@db:${POSTGRES_PORT}/${POSTGRES_DB_NAME}
+      POSTGRES_URL: postgres://${POSTGRES_USER}:${POSTGRES_PASS}@postgres:${POSTGRES_PORT}/${POSTGRES_DB_NAME}
       POSTGRES_HEALTH_TABLE_NAME: ${POSTGRES_HEALTH_TABLE_NAME}
+      KEYCLOAK_URL: http://keycloak:8080
+      KEYCLOAK_REALM_NAME: ${KEYCLOAK_REALM_NAME}
+      KEYCLOAK_CLIENT_ID: ${KEYCLOAK_CLIENT_ID}
+      KEYCLOAK_SECRET_ID: ${KEYCLOAK_SECRET_ID}
+      KEYCLOAK_ADMIN_USER: ${KEYCLOAK_USER}
+      KEYCLOAK_ADMIN_PASSWORD: ${KEYCLOAK_PASS}
+      KEYCLOAK_ADMIN_REALM_NAME: ${KEYCLOAK_ADMIN_REALM_NAME}
+      KEYCLOAK_ADMIN_CLIENT_ID: ${KEYCLOAK_ADMIN_CLIENT_ID}
+      KEYCLOAK_ADMIN_SECRET_ID: ${KEYCLOAK_ADMIN_SECRET_ID}
+
     depends_on:
-      - db
+      - postgres
     links:
-      - db
+      - postgres
     ports:
       - ${BACKEND_PORT}:8080 
     # volumes:
     #   - .:/opt/app/api
 
-  db:
+  postgres:
     image: postgres:14-alpine
     volumes:
       - postgres_data:/var/lib/postgresql/data
@@ -27,19 +37,42 @@ services:
       POSTGRES_USER: ${POSTGRES_USER}
       POSTGRES_PASSWORD: ${POSTGRES_PASS}
       POSTGRES_HOST_AUTH_METHOD: trust
+
     ports:
       - ${POSTGRES_PORT}:5432
 
   flyway:
     image: flyway/flyway
     # postgres url schema: jdbc:postgresql://host:port/database
-    command: -url=jdbc:postgresql://db:${POSTGRES_PORT}/${POSTGRES_DB_NAME} -user=${POSTGRES_USER} -password=${POSTGRES_PASS} -connectRetries=10 migrate info
+    command: -url=jdbc:postgresql://postgres:${POSTGRES_PORT}/${POSTGRES_DB_NAME} -user=${POSTGRES_USER} -password=${POSTGRES_PASS} -connectRetries=10 migrate info
     volumes:
         - ./migrations:/flyway/sql
     links:
-        - db
+        - postgres
     depends_on:
-        - db
+        - postgres
+
+  keycloak:
+    image: jboss/keycloak:${KEYCLOAK_VERSION}
+    volumes:
+      - ./keycloak_imports:/opt/jboss/keycloak/imports
+    restart: always
+    links:
+      - postgres
+    environment:
+      KEYCLOAK_IMPORT: /opt/jboss/keycloak/imports/realm-export.json -Dkeycloak.profile.feature.upload_scripts=enabled 
+      DB_VENDOR: POSTGRES
+      DB_ADDR: postgres:${POSTGRES_PORT}
+      DB_DATABASE: ${POSTGRES_DB_NAME}
+      DB_USER: ${POSTGRES_USER}
+      DB_PASSWORD: ${POSTGRES_PASS}
+      # KEYCLOAK_USER: ${KEYCLOAK_USER}
+      # KEYCLOAK_PASSWORD: ${KEYCLOAK_PASS}
+
+    ports:
+      - ${KEYCLOAK_PORT}:8080
+    depends_on:
+      - postgres
 
 volumes:
   postgres_data:
