@@ -44,7 +44,12 @@ func login(w http.ResponseWriter, r *http.Request) {
 	}
 
 	authHandler := GetAuthHandlerInstance()
-	token := authHandler.login(authBody.Username, authBody.Password)
+	token, err := authHandler.login(authBody.Username, authBody.Password)
+	if err != nil {
+		logging.Log("Login ERR: ", err)
+		w.WriteHeader(http.StatusUnauthorized)
+		return
+	}
 	res := &AuthRes{Token: token}
 
 	w.Header().Set("Content-Type", "application/json")
@@ -72,7 +77,12 @@ func createUser(w http.ResponseWriter, r *http.Request) {
 	}
 
 	authHandler := GetAuthHandlerInstance()
-	token := authHandler.createUser(authBody.Username, authBody.Password)
+	token, err := authHandler.createUser(authBody.Username, authBody.Password)
+	if err != nil {
+		logging.Log("Login ERR: ", err)
+		w.WriteHeader(http.StatusUnauthorized)
+		return
+	}
 	res := &AuthRes{Token: token}
 
 	w.Header().Set("Content-Type", "application/json")

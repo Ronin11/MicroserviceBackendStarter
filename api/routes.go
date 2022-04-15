@@ -8,20 +8,22 @@ import (
 
 	"nateashby.com/gofun/logging"
 	"nateashby.com/gofun/health"
+	"nateashby.com/gofun/auth"
 )
+
 
 func CreateHealthRoutes(router *mux.Router) http.Handler {
 	logging.Log("Creating health routes")
 	
-	router.HandleFunc("/", viewMeasurements).Methods("GET")
-	router.HandleFunc("/addMeasurements", addMeasurements).Methods("POST")
-	router.HandleFunc("/getMeasurement", getMeasurement).Methods("POST")
-	router.HandleFunc("/deleteMeasurement", deleteMeasurement).Methods("POST")
+	router.HandleFunc("/", BuildRouteWithUser(viewMeasurements).Handle).Methods("GET")
+	router.HandleFunc("/addMeasurements", BuildRouteWithUser(addMeasurements).Handle).Methods("POST")
+	router.HandleFunc("/getMeasurement", BuildRouteWithUser(getMeasurement).Handle).Methods("POST")
+	router.HandleFunc("/deleteMeasurement", BuildRouteWithUser(deleteMeasurement).Handle).Methods("POST")
 	
 	return router
 }
 
-func viewMeasurements(w http.ResponseWriter, r *http.Request) {
+func viewMeasurements(w http.ResponseWriter, r *http.Request, user *auth.User) {
 	measurements, err := health.GetMeasurements()
 	if err != nil {
 		logging.Log("ERR: ", err)
@@ -38,7 +40,7 @@ func viewMeasurements(w http.ResponseWriter, r *http.Request) {
 	w.Write(jsonResponse)
 }
 
-func addMeasurements(w http.ResponseWriter, r *http.Request) {
+func addMeasurements(w http.ResponseWriter, r *http.Request, user *auth.User) {
 	var entry health.HealthData
 	err := json.NewDecoder(r.Body).Decode(&entry)
 	if (health.HealthData{}) == entry {
@@ -63,7 +65,7 @@ func addMeasurements(w http.ResponseWriter, r *http.Request) {
 	w.Write(measurement.Serialize())
 }
 
-func getMeasurement(w http.ResponseWriter, r *http.Request) {
+func getMeasurement(w http.ResponseWriter, r *http.Request, user *auth.User) {
 	var idObj IdReqObj
 	err := json.NewDecoder(r.Body).Decode(&idObj)
 	if (IdReqObj{}) == idObj {
@@ -83,11 +85,11 @@ func getMeasurement(w http.ResponseWriter, r *http.Request) {
 	w.Write(measurement.Serialize())
 }
 
-func updateMeasurement(w http.ResponseWriter, r *http.Request) {
+func updateMeasurement(w http.ResponseWriter, r *http.Request, user *auth.User) {
 
 }
 
-func deleteMeasurement(w http.ResponseWriter, r *http.Request) {
+func deleteMeasurement(w http.ResponseWriter, r *http.Request, user *auth.User) {
 	var idObj IdReqObj
 	err := json.NewDecoder(r.Body).Decode(&idObj)
 	if (IdReqObj{}) == idObj {

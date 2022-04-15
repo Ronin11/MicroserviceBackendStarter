@@ -6,9 +6,14 @@ import (
 	"context"
 	
 	"github.com/Nerzal/gocloak/v11"
+	"github.com/golang-jwt/jwt/v4"
 
 	"nateashby.com/gofun/logging"
 )
+
+type AuthClaims struct {
+	Id string `json:"sub"`
+}
 
 type AdminCreds struct {
 	user string
@@ -82,19 +87,55 @@ func GetAuthHandlerInstance() (*AuthHandler) {
 	)
 }
 
-func (ah *AuthHandler) login(user string, passhash string) string {
-	logging.Log("User login: ", user, passhash)
+func (ah *AuthHandler) GetUserFromToken(tokenString string) *User{
+	ctx := context.Background()
+	rptResult, err := ah.client.RetrospectToken(ctx, tokenString, ah.clientId, ah.secretId, ah.realm)
+	if err != nil {
+		logging.Log("Inspection failed:"+ err.Error())
+	 	return nil
+	}
+   
+	if !*rptResult.Active {
+		logging.Log("Token is not active")
+		return nil
+	}
+
+	token, _, err := ah.client.DecodeAccessToken(ctx, tokenString, ah.realm)
+	if err != nil {
+		logging.Log("Failed to decode token")
+		return nil
+	}
+
+	fmt.Println("WUT: ", token, token.Claims)
+	fmt.Println(token.Claims.(*jwt.MapClaims))
+	// if claims, ok := *token.Claims.(jwt.MapClaims); ok {
+	// 	fmt.Println("CLAIMS: ", claims)
+	// 	// return claims, nil
+	// }
+	// asdf := claims.sub
+	// claims2 := claims
+	// fmt.Println(make(map[string]claims))
+	// fmt.Println(&token.Claims["id"])
+	// fmt.Println(claims)
+	// id := token.Claims.
+	// fmt.Println("ID: ", id)
+	// claimsMap := *claims
+	// // fmt.Println("STUFF: ", claimsMap["id"].(string))
+	// fmt.Println("RESULT: ", claimsMap["sub"].(string))
+	return &User{Id: 0}
+}
+
+func (ah *AuthHandler) login(user string, passhash string) (string, error) {
 	ctx := context.Background()
 	token, err := ah.client.Login(ctx, ah.clientId, ah.secretId, ah.realm, user, passhash)
 	if err != nil {
 		logging.Log("Login failed:"+ err.Error())
+		return "", err
 	}
-	return token.AccessToken
+	return token.AccessToken, nil
 }
 
-func (ah *AuthHandler) createUser(username string, passhash string) string {
-	logging.Log("Create User login: ", username)
-
+func (ah *AuthHandler) createUser(username string, passhash string) (string, error) {
 	user := gocloak.User{
 		// FirstName: gocloak.StringP("Bob"),
 		// LastName:  gocloak.StringP("Uncle"),
@@ -106,11 +147,13 @@ func (ah *AuthHandler) createUser(username string, passhash string) string {
 	ctx := context.Background()
 	userId, err := ah.client.CreateUser(ctx, ah.adminCreds.token.AccessToken, ah.realm, user)
 	if err != nil {
-		logging.Log("Login failed:"+ err.Error())
+		logging.Log("Create User failed:"+ err.Error())
+		return "", err
 	}
 	err = ah.client.SetPassword(ctx, ah.adminCreds.token.AccessToken, userId, ah.realm, passhash, false)
 	if err != nil {
 		logging.Log("Password Set failed:"+ err.Error())
+		return "", err
 	}
 	return ah.login(username, passhash)
 }
