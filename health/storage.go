@@ -66,7 +66,7 @@ func (sh *StorageHandler) GetAllMeasurements(user *auth.User) (*HealthMeasuremen
 	measurements := &HealthMeasurements{}
 	for rows.Next() {
 		var hm HealthMeasurement
-		err := rows.Scan(&hm.Id, &hm.CreatedTime, &hm.Data)
+		err := rows.Scan(&hm.Id, &hm.UserId, &hm.CreatedTime, &hm.Data)
 		if err != nil {
 			logging.Log("SCAN ERR: ", err)
 		}
@@ -76,19 +76,11 @@ func (sh *StorageHandler) GetAllMeasurements(user *auth.User) (*HealthMeasuremen
 	return measurements, nil
 }
 
-func (sh *StorageHandler) CreateMeasurement(user *auth.User, data HealthData) (*HealthMeasurement, error){
-	var hm HealthMeasurement 
-	err := sh.db.QueryRow(context.Background(), fmt.Sprintf("INSERT INTO %s (user_id, data) VALUES($1, $1) RETURNING *", sh.tableName), user.Id, data).Scan(&hm.Id, &hm.CreatedTime, &hm.Data)
-	if err != nil {
-		logging.Log("CREATE FAILED: ", err)
-	}
-
-	return &hm, err
-}
-
 func (sh *StorageHandler) GetMeasurement(user *auth.User, id string) (*HealthMeasurement, error){
 	var hm HealthMeasurement 
-	err := sh.db.QueryRow(context.Background(), fmt.Sprintf("SELECT * FROM %s WHERE user_id=$1 AND id=$2", sh.tableName), user.Id, id).Scan(&hm.Id, &hm.CreatedTime, &hm.Data)
+	err := sh.db.QueryRow(
+		context.Background(),
+		fmt.Sprintf("SELECT * FROM %s WHERE user_id=$1 AND id=$2", sh.tableName), user.Id, id).Scan(&hm.Id, &hm.UserId, &hm.CreatedTime, &hm.Data)
 	if err != nil {
 		logging.Log("GET FAILED: ", err)
 	}
@@ -96,9 +88,35 @@ func (sh *StorageHandler) GetMeasurement(user *auth.User, id string) (*HealthMea
 	return &hm, err
 }
 
+func (sh *StorageHandler) CreateMeasurement(user *auth.User, data *HealthData) (*HealthMeasurement, error){
+	var hm HealthMeasurement 
+	err := sh.db.QueryRow(
+		context.Background(),
+		fmt.Sprintf("INSERT INTO %s (user_id, data) VALUES($1, $2) RETURNING *", sh.tableName), user.Id, data).Scan(&hm.Id, &hm.UserId, &hm.CreatedTime, &hm.Data)
+	if err != nil {
+		logging.Log("CREATE FAILED: ", err)
+	}
+
+	return &hm, err
+}
+
+func (sh *StorageHandler) UpdateMeasurement(user *auth.User, hm *HealthMeasurement) (*HealthMeasurement, error){
+	var hm2 HealthMeasurement 
+	err := sh.db.QueryRow(
+		context.Background(),
+		fmt.Sprintf("UPDATE %s SET data=$1 WHERE user_id=$2 AND id=$3 RETURNING *", sh.tableName), hm.Data, user.Id, hm.Id).Scan(&hm2.Id, &hm2.UserId, &hm2.CreatedTime, &hm2.Data)
+	if err != nil {
+		logging.Log("UPDATE FAILED: ", err)
+	}
+
+	return &hm2, err
+}
+
 func (sh *StorageHandler) DeleteMeasurement(user *auth.User, id string) (error){
 
-	_, err := sh.db.Exec(context.Background(), fmt.Sprintf("DELETE FROM %s WHERE user_id=$1 AND id=$2", sh.tableName), user.Id, id)
+	_, err := sh.db.Exec(
+		context.Background(),
+		fmt.Sprintf("DELETE FROM %s WHERE user_id=$1 AND id=$2", sh.tableName), user.Id, id)
 	if err != nil {
 		logging.Log("DELETE FAILED: ", err)
 	}
@@ -106,13 +124,4 @@ func (sh *StorageHandler) DeleteMeasurement(user *auth.User, id string) (error){
 	return err
 }
 
-func (sh *StorageHandler) UpdateMeasurement(user *auth.User, id string, data HealthData) (error){
-	var hm HealthMeasurement 
-	err := sh.db.QueryRow(context.Background(), fmt.Sprintf("REPLACE INTO %s WHERE user_id=$1 AND id=$2", sh.tableName), user.Id, id).Scan(&hm.Id, &hm.CreatedTime, &hm.Data)
-	if err != nil {
-		logging.Log("UPDATE FAILED: ", err)
-	}
-
-	return err
-}
 

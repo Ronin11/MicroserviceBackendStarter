@@ -1,7 +1,6 @@
 package api
 
 import (
-	"fmt"
 	"strings"
 	"net/http"
 
@@ -25,7 +24,6 @@ func getTokenFromRequest(r *http.Request) string {
 
 func (ea *EnsureAuth) Handle(w http.ResponseWriter, r *http.Request) {
 	token := getTokenFromRequest(r)
-	fmt.Println("TOKEN: ", token)
 	authHandler := auth.GetAuthHandlerInstance()
     user := authHandler.GetUserFromToken(token)
     if user == nil {

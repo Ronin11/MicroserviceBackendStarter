@@ -23,14 +23,11 @@ func CreateAuthRoutes(router *mux.Router) http.Handler {
 	
 	router.HandleFunc("/login", login).Methods("POST")
 	router.HandleFunc("/createUser", createUser).Methods("POST")
-	// router.HandleFunc("/getMeasurement", getMeasurement).Methods("POST")
-	// router.HandleFunc("/deleteMeasurement", deleteMeasurement).Methods("POST")
 	
 	return router
 }
 
 func login(w http.ResponseWriter, r *http.Request) {
-	logging.Log("Login")
 	var authBody AuthReqBody
 	err := json.NewDecoder(r.Body).Decode(&authBody)
 	if (AuthReqBody{}) == authBody {

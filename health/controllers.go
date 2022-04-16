@@ -5,9 +5,14 @@ import (
 )
 
 
-func AddMeasurement(user *auth.User, hd HealthData) (*HealthMeasurement, error) {
+func AddMeasurement(user *auth.User, hd *HealthData) (*HealthMeasurement, error) {
 	storageHandler := GetStorageHandlerInstance()
 	return storageHandler.CreateMeasurement(user, hd)
+}
+
+func UpdateMeasurement(user *auth.User, hm *HealthMeasurement) (*HealthMeasurement, error) {
+	storageHandler := GetStorageHandlerInstance()
+	return storageHandler.UpdateMeasurement(user, hm)
 }
 
 func DeleteMeasurement(user *auth.User, id string) (error) {

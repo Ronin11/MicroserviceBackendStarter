@@ -1,19 +1,14 @@
 package auth
 
 import (
-	"fmt"
+	// "fmt"
 	"os"
 	"context"
-	// "encoding/json"
 	
 	"github.com/Nerzal/gocloak/v11"
 
 	"nateashby.com/gofun/logging"
 )
-
-// type User struct {
-// 	Id string `json:"sub"`
-// }
 
 type AdminCreds struct {
 	user string
@@ -67,8 +62,6 @@ func GetAuthHandlerInstance() (*AuthHandler) {
 	if authHandler != nil {
 		return authHandler
 	}
-
-	fmt.Println("getHandlerInstance")
 
 	adminCreds := &AdminCreds{
 		user: os.Getenv("KEYCLOAK_ADMIN_USER"),
