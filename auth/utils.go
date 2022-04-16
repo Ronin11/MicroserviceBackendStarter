@@ -4,16 +4,16 @@ import (
 	"fmt"
 	"os"
 	"context"
+	// "encoding/json"
 	
 	"github.com/Nerzal/gocloak/v11"
-	"github.com/golang-jwt/jwt/v4"
 
 	"nateashby.com/gofun/logging"
 )
 
-type AuthClaims struct {
-	Id string `json:"sub"`
-}
+// type User struct {
+// 	Id string `json:"sub"`
+// }
 
 type AdminCreds struct {
 	user string
@@ -100,29 +100,27 @@ func (ah *AuthHandler) GetUserFromToken(tokenString string) *User{
 		return nil
 	}
 
-	token, _, err := ah.client.DecodeAccessToken(ctx, tokenString, ah.realm)
+	_, claims, err := ah.client.DecodeAccessToken(ctx, tokenString, ah.realm)
 	if err != nil {
 		logging.Log("Failed to decode token")
 		return nil
 	}
 
-	fmt.Println("WUT: ", token, token.Claims)
-	fmt.Println(token.Claims.(*jwt.MapClaims))
-	// if claims, ok := *token.Claims.(jwt.MapClaims); ok {
-	// 	fmt.Println("CLAIMS: ", claims)
-	// 	// return claims, nil
-	// }
-	// asdf := claims.sub
-	// claims2 := claims
-	// fmt.Println(make(map[string]claims))
-	// fmt.Println(&token.Claims["id"])
-	// fmt.Println(claims)
-	// id := token.Claims.
-	// fmt.Println("ID: ", id)
-	// claimsMap := *claims
-	// // fmt.Println("STUFF: ", claimsMap["id"].(string))
-	// fmt.Println("RESULT: ", claimsMap["sub"].(string))
-	return &User{Id: 0}
+	claimsMap := make(map[string]interface{})
+	for key, val := range *claims {
+		claimsMap[key] = val
+	}
+
+	var user User
+	if s, ok := claimsMap["sub"].(string); ok {
+		user.Id = s
+	}
+
+	if (User{}) == user {
+		return nil
+	}
+	
+	return &user
 }
 
 func (ah *AuthHandler) login(user string, passhash string) (string, error) {

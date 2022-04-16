@@ -19,6 +19,7 @@ type HealthData struct {
 
 type HealthMeasurement struct {
 	Id        	string    	`json:"id"`
+	UserId      string    	`json:"user_id"`
 	CreatedTime	time.Time 	`json:"created_time"`
 	Data		HealthData 	`json:"data"`
 }

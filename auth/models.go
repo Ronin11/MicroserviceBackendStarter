@@ -5,5 +5,5 @@ package auth
 // )
 
 type User struct {
-	Id	int	`json:"id"`
+	Id	string	`json:"id"`
 }

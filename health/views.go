@@ -1,18 +1,17 @@
 package health
 
 import (
-	// "log"
-	// "fmt"
+	"nateashby.com/gofun/auth"
 )
 
-func GetMeasurements() (*HealthMeasurements, error) {
+func GetMeasurements(user *auth.User) (*HealthMeasurements, error) {
 	storageHandler := GetStorageHandlerInstance()
 
-	return storageHandler.GetAllMeasurements()
+	return storageHandler.GetAllMeasurements(user)
 }
 
-func GetMeasurement(id string) (*HealthMeasurement, error) {
+func GetMeasurement(user *auth.User, id string) (*HealthMeasurement, error) {
 	storageHandler := GetStorageHandlerInstance()
 
-	return storageHandler.GetMeasurement(id)
+	return storageHandler.GetMeasurement(user, id)
 }

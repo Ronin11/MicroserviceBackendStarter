@@ -24,7 +24,7 @@ func CreateHealthRoutes(router *mux.Router) http.Handler {
 }
 
 func viewMeasurements(w http.ResponseWriter, r *http.Request, user *auth.User) {
-	measurements, err := health.GetMeasurements()
+	measurements, err := health.GetMeasurements(user)
 	if err != nil {
 		logging.Log("ERR: ", err)
 	}
@@ -52,7 +52,7 @@ func addMeasurements(w http.ResponseWriter, r *http.Request, user *auth.User) {
 		w.WriteHeader(http.StatusBadRequest)
 		return
 	}
-	measurement, err := health.AddMeasurement(entry)
+	measurement, err := health.AddMeasurement(user, entry)
 	
 	if err != nil {
 		logging.Log("ERR: ", err)
@@ -78,7 +78,7 @@ func getMeasurement(w http.ResponseWriter, r *http.Request, user *auth.User) {
 		return
 	}
 	
-	measurement, err := health.GetMeasurement(idObj.Id)
+	measurement, err := health.GetMeasurement(user, idObj.Id)
 
 	w.Header().Set("Content-Type", "application/json")
 	w.WriteHeader(http.StatusOK)
@@ -101,7 +101,7 @@ func deleteMeasurement(w http.ResponseWriter, r *http.Request, user *auth.User) 
 		w.WriteHeader(http.StatusBadRequest)
 		return
 	}
-	err = health.DeleteMeasurement(idObj.Id)
+	err = health.DeleteMeasurement(user, idObj.Id)
 
 	if err != nil {
 		logging.Log("GET ERR: ", err)
