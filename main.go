@@ -6,8 +6,9 @@ import (
 
 	"github.com/gorilla/mux"
 
-	"nateashby.com/gofun/api"
 	"nateashby.com/gofun/auth"
+	"nateashby.com/gofun/api"
+	"nateashby.com/gofun/activity"
 )
 
 func main() {
@@ -19,6 +20,10 @@ func main() {
 	api.CreateHealthRoutes(healthRouter)
 	authRouter := router.PathPrefix("/auth").Subrouter()
 	auth.CreateAuthRoutes(authRouter)
+	activityRouter := router.PathPrefix("/activity").Subrouter()
+	activity.CreateActivityRoutes(activityRouter)
+
+
 	
     http.Handle("/", router)
 

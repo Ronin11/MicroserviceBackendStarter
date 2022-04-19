@@ -5,6 +5,7 @@ go 1.18
 require (
 	github.com/Nerzal/gocloak/v11 v11.0.2
 	github.com/gorilla/mux v1.8.0
+	github.com/gorilla/websocket v1.5.0
 	github.com/jackc/pgx/v4 v4.15.0
 )
 
