@@ -1,7 +1,6 @@
 package activity
 
 import (
-	"fmt"
 	"bytes"
 	"log"
 	"net/http"
